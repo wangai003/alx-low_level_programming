@@ -1,44 +1,31 @@
-#include <stdio.h>
+#include "main.h"
 #include <stdlib.h>
-#include <unistd.h>
 
 /**
- * read_textfile - Reads and prints a text file to standard output.
- * @filename: The name of the file to read.
- * @letters: The number of letters to read and print.
+ * read_textfile- Custom text file reader and writer.
+ * @filename: Name of the text file to read.
+ * @letters: Number of letters to be processed.
  *
- * Return: The actual number of letters read and printed.
+ * Return: The actual number of bytes read and printed.
+ *         0 when the function fails or filename is NULL.
  */
-ssize_t read_textfile(const char *filename, size_t letters) {
-    if (filename == NULL)
-        return (0);
+ssize_t read_textfile(const char *filename, size_t letters)
+{
+	char *custom_buf;
+	ssize_t custom_fd;
+	ssize_t custom_write;
+	ssize_t custom_total;
 
-    FILE *file = fopen(filename, "r");
-    if (file == NULL)
-        return (0);
+	custom_fd = open(filename, O_RDONLY);
+	if (custom_fd == -1)
+		return (0);
 
-    char *buffer = malloc(letters);
-    if (buffer == NULL) {
-        fclose(file);
-        return (0);
-    }
+	custom_buf = malloc(sizeof(char) * letters);
+	custom_total = read(custom_fd, custom_buf, letters);
+	custom_write = write(STDOUT_FILENO, custom_buf, custom_total);
 
-    ssize_t bytes_read = fread(buffer, 1, letters, file);
-    if (bytes_read < 0) {
-        fclose(file);
-        free(buffer);
-        return (0);
-    }
-
-    ssize_t bytes_written = write(STDOUT_FILENO, buffer, bytes_read);
-    if (bytes_written != bytes_read) {
-        fclose(file);
-        free(buffer);
-        return (0);
-    }
-
-    fclose(file);
-    free(buffer);
-    return (bytes_written);
+	free(custom_buf);
+	close(custom_fd);
+	return (custom_write);
 }
 
